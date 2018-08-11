@@ -1,8 +1,12 @@
-﻿#include <string>
+﻿#include <type_traits>
+#include <string>
 #include <algorithm>
 #include <iostream>
 #include <vector>
 #include <iterator>
+#include <cstddef>
+#include <any>
+#include <utility>
 
 class string {
 public:
@@ -200,21 +204,35 @@ public:
 
 student s("ksjdfh", 123);
 
+//class Someone
+//{
+//private:
+//	human* ptr;
+//public:
+//	Someone() : ptr(new human) {}
+//	template <typename T>
+//	Someone(const T& t) : ptr(new T(t)) {}
+//	friend std::ostream& operator<<(std::ostream& os, const Someone& S) { S.ptr->print(os); return os; }
+//	~Someone() {}
+//};
+//
+//Someone a(s);
+	
 class Someone
 {
 private:
-	human* ptr;
+	std::unique_ptr<human> ptr;
 public:
-	Someone() : ptr(new human) {}
-	template <typename T>
-	Someone(const T& t) : ptr(new T(t)) {}
+	Someone() : ptr(std::move(new human)) {}
+	Someone(const std::any& t) 
+	{
+		if (typeid(t.type).name() == "Someone")
+			ptr = std::move(std::any_cast<Someone>(t).ptr);
+		else if ()
+	}
 	friend std::ostream& operator<<(std::ostream& os, const Someone& S) { S.ptr->print(os); return os; }
 	~Someone() {}
 };
-
-Someone a(s);
-
-
 
 
 
@@ -224,6 +242,18 @@ public:
 	~x() { std::cout << "delete"; }
 } v;
 
+
+
+
+
+
+class X
+{
+	int x;
+public:
+	X(int h) : x(h) {}
+	void* operator new(size_t, void* p) { return p; }
+};
 
 
 
@@ -252,8 +282,19 @@ int main()
 
 
 
+	std::byte buffer[sizeof(human)];
+	X* p = new(buffer) X{1};
 
-	std::vector<Someone> People{ s, s, h, h };
+
+
+
+	std::vector<Someone> People
+	{ 
+		human{"Steve"}, 
+		student{ "Sam", 12000 },
+		human{"Mike"},
+		student("Adam", 17101) 
+	};
 	
 	for (Someone hm : People)
 		std::cout << hm << "\n";
