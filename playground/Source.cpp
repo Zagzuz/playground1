@@ -166,11 +166,11 @@ class human
 {
 private:
 	std::string name;
+	virtual human* clone() { return new human(*this); }
 public:
 	human() {}
 	human(const std::string& n) : name(n) {}
 	human(const human& h) : name(h.name) {}
-	human* clone() { return new human(name); }
 	const std::string& get_name() const { return name; }
 	virtual void print(std::ostream& os) { os << *this; }
 	friend std::ostream& operator<<(std::ostream& os, const human& h) { return os << "name: " << h.get_name(); }
@@ -182,7 +182,7 @@ human h2("mnbmnb");
 human h3("oipu");
 human h4("khfsdgk");
 //уродливо, вектор клонов :)
-std::vector<human*> vec{ h.clone(), h2.clone(), h3.clone(), h4.clone() }; 
+//std::vector<human*> vec{ h.clone(), h2.clone(), h3.clone(), h4.clone() }; 
 std::vector<human*> vec2{ new human(h), new human(h2), new human(h3), new human(h4) };
 //вектор "новорожденных"
 std::vector<human*> vec3{ new human("hjsd"), new human("oiuo"), new human("qweqw"), new human(",mn,") };
@@ -190,6 +190,7 @@ std::vector<human*> vec3{ new human("hjsd"), new human("oiuo"), new human("qweqw
 class student : public human
 {
 	int group;
+	human* clone() { return new student(*this); }
 public:
 	student() {}
 	student(const std::string& n, int g) : human(n), group(g) {}
@@ -204,35 +205,20 @@ public:
 
 student s("ksjdfh", 123);
 
-//class Someone
-//{
-//private:
-//	human* ptr;
-//public:
-//	Someone() : ptr(new human) {}
-//	template <typename T>
-//	Someone(const T& t) : ptr(new T(t)) {}
-//	friend std::ostream& operator<<(std::ostream& os, const Someone& S) { S.ptr->print(os); return os; }
-//	~Someone() {}
-//};
-//
-//Someone a(s);
-	
 class Someone
 {
 private:
-	std::unique_ptr<human> ptr;
+	human* ptr;
 public:
-	Someone() : ptr(std::move(new human)) {}
-	Someone(const std::any& t) 
-	{
-		if (typeid(t.type).name() == "Someone")
-			ptr = std::move(std::any_cast<Someone>(t).ptr);
-		else if ()
-	}
+	Someone() : ptr(new human) {}
+	template <typename T>
+	Someone(const T& t) : ptr(new T(t)) {}
 	friend std::ostream& operator<<(std::ostream& os, const Someone& S) { S.ptr->print(os); return os; }
-	~Someone() {}
+	~Someone() { delete ptr; }
 };
+
+Someone a(s);
+
 
 
 
@@ -283,22 +269,21 @@ int main()
 
 
 	std::byte buffer[sizeof(human)];
-	X* p = new(buffer) X{1};
+	X* p = new(buffer) X{ 1 };
 
 
 
 
 	std::vector<Someone> People
-	{ 
+	{
 		human{"Steve"}, 
 		student{ "Sam", 12000 },
 		human{"Mike"},
 		student("Adam", 17101) 
 	};
-	
-	for (Someone hm : People)
-		std::cout << hm << "\n";
 
+	for (auto hm : People)
+		std::cout << hm << std::endl;
 
 
 
