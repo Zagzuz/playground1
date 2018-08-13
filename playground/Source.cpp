@@ -244,8 +244,27 @@ public:
 
 
 
+
+int global_var = 3;
+std::string glbstr = "234";
+
+template <typename T, T* addr>
+void Add(const T& value) {
+	*addr += value;
+}
+
+
+
+
+
 int main()
 {
+	Add<int, &global_var>(5);
+	std::cout << global_var;
+	Add<std::string, &glbstr>("234");
+
+
+
 	B b;
 	C c;
 	D d;
